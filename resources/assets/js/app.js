@@ -8,6 +8,8 @@
 require('./bootstrap');
 
 window.Vue = require('vue');
+import {vueBaberrage} from 'vue-baberrage';
+Vue.use(vueBaberrage);
 
 /**
  * Next, we will create a fresh Vue application instance and attach it to
@@ -16,6 +18,8 @@ window.Vue = require('vue');
  */
 
 Vue.component('example-component', require('./components/ExampleComponent.vue'));
+// Vue.component('tasks-component', require('./components/TasksComponent.vue').default);
+Vue.component('danmu-component', require('./components/DanmuComponent.vue'));
 
 const app = new Vue({
     el: '#app'
