@@ -45310,21 +45310,44 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
             position: 'top',
             barrageIsShow: true,
             currentId: 0,
-            barrageLoop: false,
+            barrageLoop: true,
+            websocket: null,
             barrageList: []
         };
+    },
+    created: function created() {
+        // 初始化 websocket 并定义回调函数
+        this.websocket = new WebSocket("ws://swoole-xueyuanjun.laravel.host/ws");
+        this.websocket.onopen = function (event) {
+            console.log("已建立 WebSocket 连接");
+        };
+        var that = this;
+        this.websocket.onmessage = function (event) {
+            // 接收到 WebSocket 服务器返回消息时触发
+            var data = JSON.parse(event.data);
+            that.addToList(data.position, data.message);
+        };
+        this.websocket.onerror = function (event) {
+            console.log("与 WebSocket 通信出错");
+        };
+        this.websocket.onclose = function (event) {
+            console.log("断开 WebSocket 连接");
+        };
+    },
+    destroyed: function destroyed() {
+        this.websocket.close();
     },
 
     methods: {
         removeList: function removeList() {
             this.barrageList = [];
         },
-        addToList: function addToList() {
-            if (this.position === 'top') {
+        addToList: function addToList(position, message) {
+            if (position === 'top') {
                 this.barrageList.push({
                     id: ++this.currentId,
                     avatar: 'https://xueyuanjun.com/assets/avatars/numxwdxf8lrtrsol.jpg',
-                    msg: this.msg + this.currentId,
+                    msg: message,
                     barrageStyle: 'top',
                     time: 8,
                     type: __WEBPACK_IMPORTED_MODULE_0_vue_baberrage__["MESSAGE_TYPE"].FROM_TOP,
@@ -45334,11 +45357,15 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
                 this.barrageList.push({
                     id: ++this.currentId,
                     avatar: 'https://xueyuanjun.com/assets/avatars/numxwdxf8lrtrsol.jpg',
-                    msg: this.msg,
+                    msg: message,
                     time: 15,
                     type: __WEBPACK_IMPORTED_MODULE_0_vue_baberrage__["MESSAGE_TYPE"].NORMAL
                 });
             }
+        },
+        sendMsg: function sendMsg() {
+            // 发送消息到 WebSocket 服务器
+            this.websocket.send('{"position":"' + this.position + '", "message":"' + this.msg + '"}');
         }
     }
 });
@@ -45431,7 +45458,7 @@ var render = function() {
           {
             staticStyle: { float: "left" },
             attrs: { type: "button" },
-            on: { click: _vm.addToList }
+            on: { click: _vm.sendMsg }
           },
           [_vm._v("发送")]
         )
